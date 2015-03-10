@@ -425,51 +425,96 @@ blocJams.service('SongPlayer', function() {
   };
 });
 
-blocJams.directive('slider', function() {
+blocJams.directive('slider', ['$document', function($document){
+  // Returns a number between 0 and 1 to determine where the mouse event happened along the slider bar.
+   var calculateSliderPercentFromMouseEvent = function($slider, event) {
+     var offsetX =  event.pageX - $slider.offset().left; // Distance from left
+     var sliderWidth = $slider.width(); // Width of slider
+     var offsetXPercent = (offsetX  / sliderWidth);
+     offsetXPercent = Math.max(0, offsetXPercent);
+     offsetXPercent = Math.min(1, offsetXPercent);
+     return offsetXPercent;
+   }
 
-  var updateSeekPercentage = function($seekBar, event) {
-    var barWidth = $seekBar.width();
-    var offsetX = event.pageX - $seekBar.offset().left;
+   var numberFromValue = function(value, defaultValue) {
+     if (typeof value === 'number') {
+       return value;
+     }
 
-    var offsetXPercent = (offsetX  / barWidth) * 100;
-    offsetXPercent = Math.max(0, offsetXPercent);
-    offsetXPercent = Math.min(100, offsetXPercent);
+     if(typeof value === 'undefined') {
+       return defaultValue;
+     }
 
-    var percentageString = offsetXPercent + '%';
-    $seekBar.find('.fill').width(percentageString);
-    $seekBar.find('.thumb').css({left: percentageString});
-  };
+     if(typeof value === 'string') {
+       return Number(value);
+     }
+   }
 
   return {
-    templateUrl: '/templates/directives/slider.html',
+    templateUrl: '/templates/directives/slider.html', // We'll create these files shortly.
     replace: true,
     restrict: 'E',
+    scope: {
+      onChange: '&'
+    },
     link: function(scope, element, attributes) {
+    // These values represent the progress into the song/volume bar, and its max value.
+    // For now, we're supplying arbitrary initial and max values.
 
+      scope.value  = 0;
+      scope.max = 100;
       var $seekBar = $(element);
-
-      $seekBar.click(function(event) {
-        updateSeekPercentage($seekBar, event);
+      attributes.$observe('value', function(newValue) {
+        scope.value = numberFromValue(newValue, 0);
       });
 
-      $seekBar.find('.thumb').mousedown(function(event){
-        $seekBar.addClass('no-animate');
-
-        $(document).bind('mousemove.thumb', function(event){
-          updateSeekPercentage($seekBar, event);
-        });
-
-        //cleanup
-        $(document).bind('mouseup.thumb', function(){
-          $seekBar.removeClass('no-animate');
-          $(document).unbind('mousemove.thumb');
-          $(document).unbind('mouseup.thumb');
-        });
-
+      attributes.$observe('max', function(newValue) {
+        scope.max = numberFromValue(newValue, 100) || 100;
       });
+      var percentString = function () {
+        var value = scope.value || 0;
+        var max = scope.max || 100;
+        percent = value / max * 100;
+        return percent + "%";
+      }
+      scope.fillStyle = function() {
+       return {width: percentString()};
+      }
+
+      scope.thumbStyle = function() {
+        return {left: percentString()};
+      }
+
+      scope.onClickSlider = function(event) {
+        var percent = calculateSliderPercentFromMouseEvent($seekBar, event);
+        scope.value = percent * scope.max;
+        notifyCallback(scope.value);
+      }
+
+      scope.trackThumb = function() {
+        $document.bind('mousemove.thumb', function(event){
+          var percent = calculateSliderPercentFromMouseEvent($seekBar, event);
+          scope.$apply(function(){
+            scope.value = percent * scope.max;
+            notifyCallback(scope.value);
+          });
+        });
+
+         //cleanup work
+        $document.bind('mouseup.thumb', function(){
+          $document.unbind('mousemove.thumb');
+          $document.unbind('mouseup.thumb');
+        });
+      }
+      // Place this as the last function defined in the 'link' function of the directive.
+      var notifyCallback = function(newValue) {
+        if(typeof scope.onChange === 'function') {
+          scope.onChange({value: newValue});
+        }
+      };
     }
   };
-});
+}]);
 
 });
 
