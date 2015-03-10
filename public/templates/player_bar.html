@@ -13,9 +13,9 @@
       </a>
     </div>
     <div class='currently-playing player-bar-control-group'>
-      <h2 class='song-name'>{{ songPlayer.currentSong.name }}</h2>
+      <slider value='{{playTime}}' max='{{songPlayer.currentSong.length}}' on-change='songPlayer.seek(value)'></slider>
       <div class='seek-control'>
-        <slider></slider>
+        <slider value='{{playTime}}' max='{{songPlayer.currentSong.length}}'></slider>
         <div class='current-time'> {{ songPlayer.playTime }} </div>
         <div class='total-time'> {{ songPlayer.currentSong.length }} </div>
       </div>

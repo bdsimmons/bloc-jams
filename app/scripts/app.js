@@ -12,11 +12,11 @@ var albumPicasso = {
   albumArtUrl: '/images/album-placeholder.png',
 
   songs: [
-    { name: 'Blue', length: '4:26', audioUrl: '/music/placeholders/blue' },
-    { name: 'Green', length: '3:14', audioUrl: '/music/placeholders/green' },
-    { name: 'Red', length: '5:01', audioUrl: '/music/placeholders/red' },
-    { name: 'Pink', length: '3:21', audioUrl: '/music/placeholders/pink' },
-    { name: 'Magenta', length: '2:15', audioUrl: '/music/placeholders/magenta' }
+    { name: 'Blue', length: 163.38, audioUrl: '/music/placeholders/blue' },
+    { name: 'Green', length: 105.66, audioUrl: '/music/placeholders/green' },
+    { name: 'Red', length: 270.14, audioUrl: '/music/placeholders/red' },
+    { name: 'Pink', length: 154.81, audioUrl: '/music/placeholders/pink' },
+    { name: 'Magenta', length: 375.92, audioUrl: '/music/placeholders/magenta' }
   ]
 };
 
@@ -201,6 +201,7 @@ blocJams.directive('slider', ['$document', function($document){
       scope.value  = 0;
       scope.max = 100;
       var $seekBar = $(element);
+
       attributes.$observe('value', function(newValue) {
         scope.value = numberFromValue(newValue, 0);
       });
